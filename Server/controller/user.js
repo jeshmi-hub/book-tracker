@@ -1,8 +1,11 @@
 const db = require("../models");
 const User = db.users;
+const Token = db.token;
 const Op = db.Sequelize.Op;
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const sendEmail = require("../utils/sendEmail");
+const crypto = require('crypto');
 
 const userCtrl = {
     register: async(req,res)=>{
@@ -21,6 +24,14 @@ const userCtrl = {
                 password: hashedPassword,
                 confirmPassword: hashedConfirmPassword,
               });
+
+              const token = crypto.randomBytes(32).toString('hex');
+              await Token.create({ userId: newUser.id, token });
+
+              const verificationURL = `${process.env.BASE_URL}users/${newUser.id}/verify/${token}`;
+              console.log(verificationURL);
+              await sendEmail(newUser.email, 'Verify Email', verificationURL);
+              
         
               const accessToken = createAccessToken({ id: newUser.id });
               const refreshToken = createRefreshToken({ id: newUser.id });
@@ -30,7 +41,7 @@ const userCtrl = {
                 path: '/refresh_token',
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
               });
-              res.status(200).json({ accessToken, message: "User created successfully" });
+              return res.status(200).json({ accessToken, message: "User created successfully and Email sent successfully" });
             } else {
               return res.status(500).json({ msg: "Password and confirm password do not match" });
             }
@@ -54,7 +65,7 @@ const userCtrl = {
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
   
-        res.json({ accessToken });
+        return res.json({ accessToken });
       } catch (err) {
         return res.status(500).json({ msg: err.message });
       }
@@ -84,6 +95,30 @@ const userCtrl = {
     } catch (err) {
         return res.status(500).json({msg: err.message})
     }
+    },
+
+    verifiedVerification: async(req,res)=>{
+      try{
+        const { userId, token } = req.params;
+        const user = await User.findByPk(userId);
+        if(!user){
+          return res.status(400).json({msg:"Invalid link"});
+        }
+
+        const tokenEntry = await Token.findOne({where: { userId, token }});
+        if(!tokenEntry){
+          return res.status(400).json({msg: "Invalid link"});
+        }
+
+        await User.update({verified: 1}, {where: {id: userId}});
+
+        await tokenEntry.destroy();
+        return res.json('Email verified successfully');
+
+      }catch(err){
+         res.status(500).json({msg: 'Internal server error'});
+
+      }
     }
 }
 

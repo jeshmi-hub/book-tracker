@@ -26,8 +26,14 @@
         },
         role:{
             type: DataTypes.INTEGER,
-            defaultValue: 0
+            defaultValue: 0,
+            allowNull : false
+        },
+        verified: {
+            type: DataTypes.BOOLEAN,
+            defaultValue:false
         }
     });
     return User;
+
  }
