@@ -1,11 +1,14 @@
 module.exports = (sequelize, DataTypes)=>{
     const UserOTPVerfication = sequelize.define("otp",{
-        id: {
+        userId: {
             type: DataTypes.INTEGER
         },
         otp: {
-            type: DataTypes.String
-        }
+            type: DataTypes.STRING
+        },
+        expiresAt:{
+            type: DataTypes.DATE
+        } 
     })
 
     return UserOTPVerfication;

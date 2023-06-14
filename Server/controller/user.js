@@ -1,6 +1,7 @@
 const db = require("../models");
 const User = db.users;
 const Token = db.token;
+const UserOTPVerfication = db.otp;
 const Op = db.Sequelize.Op;
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
@@ -10,7 +11,7 @@ const crypto = require('crypto');
 const userCtrl = {
     register: async(req,res)=>{
         try {
-            const { firstName, lastName, username, email, password, confirmPassword } = req.body;
+            const { firstName, lastName, username, email, password, confirmPassword,role } = req.body;
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) return res.status(400).json({ msg: "User already exists." });
             if (password === confirmPassword) {
@@ -23,6 +24,7 @@ const userCtrl = {
                 email,
                 password: hashedPassword,
                 confirmPassword: hashedConfirmPassword,
+                role
               });
 
               const token = crypto.randomBytes(32).toString('hex');
@@ -30,18 +32,23 @@ const userCtrl = {
 
               const verificationURL = `${process.env.BASE_URL}users/${newUser.id}/verify/${token}`;
               console.log(verificationURL);
-              await sendEmail(newUser.email, 'Verify Email', verificationURL);
-              
-        
               const accessToken = createAccessToken({ id: newUser.id });
               const refreshToken = createRefreshToken({ id: newUser.id });
-        
+              const result = await sendOTPVerificationEmail({ id: newUser.id, email: newUser.email });
+              await sendEmail(newUser.email, 'Verify Email', verificationURL);
+              
+      
               res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 path: '/refresh_token',
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
               });
-              return res.status(200).json({ accessToken, message: "User created successfully and Email sent successfully" });
+              res.json({
+                accessToken,
+                message: "User created successfully and Email sent successfully",
+                ...result
+                });
+              
             } else {
               return res.status(500).json({ msg: "Password and confirm password do not match" });
             }
@@ -100,6 +107,7 @@ const userCtrl = {
     verifiedVerification: async(req,res)=>{
       try{
         const { userId, token } = req.params;
+        console.log(userId)
         const user = await User.findByPk(userId);
         if(!user){
           return res.status(400).json({msg:"Invalid link"});
@@ -119,7 +127,50 @@ const userCtrl = {
          res.status(500).json({msg: 'Internal server error'});
 
       }
+    },
+  verifyOTP: async (req, res) => {
+  try {
+    const { userId, otp } = req.body;
+
+    if (!userId || !otp) {
+      return res.status(400).json({ msg: "Empty OTP details are not allowed" });
+    } else {
+      const userOTPVerificationRecord = await UserOTPVerfication.findOne({
+        where: { userId }
+      });
+
+      if (!userOTPVerificationRecord) {
+        return res.status(400).json({ msg: "The account is invalid or has already been verified. Please sign up or login." });
+      } else {
+        const { expiresAt, otp: hashedOTP } = userOTPVerificationRecord;
+
+        if (expiresAt < Date.now()) {
+          await UserOTPVerfication.destroy({ where: { userId } });
+          return res.status(400).json({ msg: "The record has expired. Please request a new OTP." });
+        } else {
+          const validOTP = await bcrypt.compare(otp, hashedOTP);
+
+          if (!validOTP) {
+            return res.status(400).json({ msg: "The OTP is invalid" });
+          } else {
+            await User.update({ verified: 1 }, { where: { id: userId } });
+            await UserOTPVerfication.destroy({ where: { userId } });
+            return res.json({
+              status: "VERIFIED",
+              message: "User email has been verified successfully"
+            });
+          }
+        }
+      }
     }
+  } catch (err) {
+    res.json({
+      status: "FAILED",
+      message: err.message
+    });
+  }
+}
+
 }
 
 const createAccessToken = (user) =>{
@@ -128,5 +179,37 @@ const createAccessToken = (user) =>{
 const createRefreshToken = (user) =>{
     return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'})
 }
+
+const sendOTPVerificationEmail = async ({ id, email }) => {
+  try {
+    const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+    const mailOptions = {
+      from: process.env.USER,
+      to: email,
+      subject: "Verify Your Email",
+      html: `<p>Enter ${otp} in the app to verify your email address and complete your registration process.</p><p>The code <b>expires in 1 hour</b>.</p>`,
+    }
+
+    const saltRounds = 10;
+    const hashedOTP = await bcrypt.hash(otp, saltRounds);
+    const newOTPVerification = await UserOTPVerfication.create({
+      userId: id,
+      otp: hashedOTP,
+      expiresAt: Date.now() + 3600000,
+    })
+    await sendEmail(`${mailOptions.to}`, `${mailOptions.subject}`, `${mailOptions.html}`)
+    return {
+      status: "PENDING",
+      message: "Verification otp email sent",
+      data: {
+        userId: id,
+        email
+      }
+    };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
 
 module.exports = userCtrl;

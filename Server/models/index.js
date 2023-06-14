@@ -29,8 +29,10 @@ db.sequelize = sequelize
 
 db.users = require('./user')(sequelize, DataTypes)
 db.token = require('./token')(sequelize, DataTypes)
+db.otp = require('./userOTPVerification')(sequelize, DataTypes)
 
 db.users.hasOne(db.token, {foreignKey: 'userId', as: 'token'});
+db.users.hasOne(db.otp, {foreignKey: 'userId', as:'otp'});
 
 db.sequelize.sync({force: false})
 .then(()=>{
