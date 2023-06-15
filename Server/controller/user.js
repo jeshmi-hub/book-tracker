@@ -58,25 +58,46 @@ const userCtrl = {
     },
     login: async (req, res) => {
       try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ where: { email } });
-        if (!user) return res.status(400).json({ msg: 'User does not exist.' });
-        const isMatch = await bcrypt.compareSync(password, user.password);
-        if (!isMatch) return res.status(400).json({ msg: 'Incorrect password.' });
-  
-        const accessToken = createAccessToken({ id: user.id });
-        const refreshToken = createRefreshToken({ id: user.id });
-        res.cookie('refreshToken', refreshToken, {
-          httpOnly: true,
-          path: '/refresh_token',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-  
-        return res.json({ accessToken });
+        const loginObject ={
+          email : req.body.email,
+          password : req.body.password
+
+        } 
+        if(!loginObject.email || !loginObject.password){
+          return res.status(500).json("Input all fields")
+        }
+        const existingUser = await User.findOne({where: {email: loginObject.email}})
+        if(!existingUser){
+          return res.status(500).json("User does not exist")
+        }else{
+          try{
+            if(existingUser.password, bcrypt.compareSync(loginObject.password, existingUser.password)){
+              if(existingUser.verified === false){
+                return res.status(400).json("Verify Email first")
+              }else{
+                const accessToken = createAccessToken({ id: existingUser.id });
+                const refreshToken = createRefreshToken({ id: existingUser.id });
+          
+                res.cookie('refreshToken', refreshToken, {
+                  httpOnly: true,
+                  path: '/refresh_token',
+                  maxAge: 7 * 24 * 60 * 60 * 1000,
+                });
+          
+                return res.json({ accessToken });
+              }
+            }
+
+          }catch(err){
+
+          }
+        }
+        
       } catch (err) {
         return res.status(500).json({ msg: err.message });
       }
-    },
+    }
+    ,
     logout: async(req,res)=>{
       try{
         res.clearCookie('refreshToken', {path:'/refresh_token'})
@@ -169,7 +190,26 @@ const userCtrl = {
       message: err.message
     });
   }
+},
+resendOTPVerificationCode: async (req, res) => {
+  try {
+    const { userId, email } = req.body;
+
+    if (!userId || !email) {
+      return res.status(400).json({ msg: "Empty user details are not allowed" });
+    } else {
+      await UserOTPVerfication.destroy({ where: { userId } });
+      sendOTPVerificationEmail({ id: userId, email,res });
+      
+    }
+  } catch (err) {
+    res.json({
+      status: "FAILED",
+      message: err.message,
+    });
+  }
 }
+
 
 }
 
@@ -180,7 +220,7 @@ const createRefreshToken = (user) =>{
     return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'})
 }
 
-const sendOTPVerificationEmail = async ({ id, email }) => {
+const sendOTPVerificationEmail = async ({ id, email,res }) => {
   try {
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
     const mailOptions = {
@@ -198,14 +238,14 @@ const sendOTPVerificationEmail = async ({ id, email }) => {
       expiresAt: Date.now() + 3600000,
     })
     await sendEmail(`${mailOptions.to}`, `${mailOptions.subject}`, `${mailOptions.html}`)
-    return {
+    return res.json ({
       status: "PENDING",
       message: "Verification otp email sent",
       data: {
         userId: id,
         email
       }
-    };
+    })
   } catch (error) {
     throw new Error(error.message);
   }
