@@ -9,53 +9,54 @@ const sendEmail = require("../utils/sendEmail");
 const crypto = require('crypto');
 
 const userCtrl = {
-    register: async(req,res)=>{
-        try {
-            const { firstName, lastName, username, email, password, confirmPassword,role } = req.body;
-            const existingUser = await User.findOne({ where: { email } });
-            if (existingUser) return res.status(400).json({ msg: "User already exists." });
-            if (password === confirmPassword) {
-              const hashedPassword = bcrypt.hashSync(password, 12);
-              const hashedConfirmPassword = bcrypt.hashSync(confirmPassword, 12);
-              const newUser = await User.create({
-                firstName,
-                lastName,
-                username,
-                email,
-                password: hashedPassword,
-                confirmPassword: hashedConfirmPassword,
-                role
-              });
+  register: async (req, res) => {
+    try {
+      const { firstName, lastName, username, email, password, confirmPassword, role } = req.body;
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) return res.status(400).json({ msg: "User already exists." });
+  
+      if (password === confirmPassword) {
+        const hashedPassword = bcrypt.hashSync(password, 12);
+        const hashedConfirmPassword = bcrypt.hashSync(confirmPassword, 12);
+        const newUser = await User.create({
+          firstName,
+          lastName,
+          username,
+          email,
+          password: hashedPassword,
+          confirmPassword: hashedConfirmPassword,
+          role
+        });
+  
+        const token = crypto.randomBytes(32).toString('hex');
+        await Token.create({ userId: newUser.id, token });
+  
+        const verificationURL = `${process.env.BASE_URL}users/${newUser.id}/verify/${token}`;
+        console.log(verificationURL);
+        const accessToken = createAccessToken({ id: newUser.id });
+        const refreshToken = createRefreshToken({ id: newUser.id });
+  
+        const result = await sendOTPVerificationEmail({ id: newUser.id, email: newUser.email, res });
 
-              const token = crypto.randomBytes(32).toString('hex');
-              await Token.create({ userId: newUser.id, token });
-
-              const verificationURL = `${process.env.BASE_URL}users/${newUser.id}/verify/${token}`;
-              console.log(verificationURL);
-              const accessToken = createAccessToken({ id: newUser.id });
-              const refreshToken = createRefreshToken({ id: newUser.id });
-              const result = await sendOTPVerificationEmail({ id: newUser.id, email: newUser.email });
-              await sendEmail(newUser.email, 'Verify Email', verificationURL);
-              
-      
-              res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                path: '/refresh_token',
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-              });
-              res.json({
-                accessToken,
-                message: "User created successfully and Email sent successfully",
-                ...result
-                });
-              
-            } else {
-              return res.status(500).json({ msg: "Password and confirm password do not match" });
-            }
-          } catch (err) {
-            return res.status(500).json({ msg: err.message });
-          }
-    },
+  
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          path: '/refresh_token',
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+  
+        return res.json({
+          accessToken,
+          message: "User created successfully and Email sent successfully",
+          ...result
+        });
+      } else {
+        return res.status(500).json({ msg: "Password and confirm password do not match" });
+      }
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
     login: async (req, res) => {
       try {
         const loginObject ={
@@ -220,7 +221,7 @@ const createRefreshToken = (user) =>{
     return jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'})
 }
 
-const sendOTPVerificationEmail = async ({ id, email,res }) => {
+const sendOTPVerificationEmail = async ({ id, email }) => {
   try {
     const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
     const mailOptions = {
@@ -228,7 +229,7 @@ const sendOTPVerificationEmail = async ({ id, email,res }) => {
       to: email,
       subject: "Verify Your Email",
       html: `<p>Enter ${otp} in the app to verify your email address and complete your registration process.</p><p>The code <b>expires in 1 hour</b>.</p>`,
-    }
+    };
 
     const saltRounds = 10;
     const hashedOTP = await bcrypt.hash(otp, saltRounds);
@@ -236,20 +237,21 @@ const sendOTPVerificationEmail = async ({ id, email,res }) => {
       userId: id,
       otp: hashedOTP,
       expiresAt: Date.now() + 3600000,
-    })
-    await sendEmail(`${mailOptions.to}`, `${mailOptions.subject}`, `${mailOptions.html}`)
-    return res.json ({
+    });
+
+    await sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
+
+    return {
       status: "PENDING",
-      message: "Verification otp email sent",
+      message: "Verification OTP email sent",
       data: {
         userId: id,
-        email
-      }
-    })
+        email,
+      },
+    };
   } catch (error) {
     throw new Error(error.message);
   }
-}
-
+};
 
 module.exports = userCtrl;
