@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const userCtrl = {
   register: async (req, res) => {
     try {
-      const { firstName, lastName, username, email, password, confirmPassword, role } = req.body;
+      const { firstName, lastName, username, email, password, confirmPassword, role,verified } = req.body;
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) return res.status(400).json({ msg: "User already exists." });
   
@@ -25,7 +25,8 @@ const userCtrl = {
           email,
           password: hashedPassword,
           confirmPassword: hashedConfirmPassword,
-          role
+          role,
+          verified
         });
   
         const token = crypto.randomBytes(32).toString('hex');
@@ -74,7 +75,7 @@ const userCtrl = {
           try{
             if(existingUser.password, bcrypt.compareSync(loginObject.password, existingUser.password)){
               if(existingUser.verified === false){
-                return res.status(400).json("Verify Email first")
+                return res.status(400).json({msg:"Verify Email first"})
               }else{
                 const accessToken = createAccessToken({ id: existingUser.id });
                 const refreshToken = createRefreshToken({ id: existingUser.id });
@@ -90,7 +91,7 @@ const userCtrl = {
             }
 
           }catch(err){
-
+            throw new Error(err.msg);
           }
         }
         
@@ -209,6 +210,47 @@ resendOTPVerificationCode: async (req, res) => {
       message: err.message,
     });
   }
+},
+getOneUser: async(req,res)=>{
+  try {
+    const user = await User.findOne({
+      where: { id: req.params.id },
+      attributes: { exclude: ['password', 'confirmPassword'] }, // Excluding the 'password' field
+    });
+
+    if (!user) {
+      return res.status(400).json({ msg: 'User does not exist.' });
+    }
+
+    res.json(user);
+  } catch (err) {
+    return res.status(500).json({ msg: err.message });
+  }
+
+},
+getAllUser: async(req,res)=>{
+  try{
+    const users = await User.findAll();
+    return res.status(200).json(users);
+  }catch(err){
+    return res.status(500).json(err);
+  }
+},
+updateUser: async(req,res)=>{
+  try{
+    const patchObject = req.body;
+    const{firstName, lastName, username, email} = patchObject
+    const updateUser = await User.update(patchObject,{
+      where: {id: req.params.id},
+    });
+
+    res.status(200).json(updateUser);
+
+  }catch(err){
+    res.status(500).json(err.message);
+
+  }
+  
 }
 
 

@@ -1,17 +1,20 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Navbar from "./components/Navbar/Navbar";
-import Footer from "./components/Footer/Footer";
-import Home from "./pages/Home/Home";
+import Home from "./pages/Home/home";
+import Register from "./components/Register";
+import Login from "./components/login";
+import SendOtp from "./components/sendOtp";
+
 const App = () => {
   return (
     <>
     <BrowserRouter>
-    <Navbar/>
     <Routes>
       <Route path="/" element={<Home/>}/>
+      <Route path="/register" element={<Register/>}/>
+      <Route path="/login" element={<Login/>}/>
+      <Route path="/sendOTP" element= {<SendOtp/>}/>
     </Routes>
-    <Footer/>
     </BrowserRouter>
     </>
     

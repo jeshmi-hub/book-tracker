@@ -1,10 +1,13 @@
 import React from 'react'
 import '../Home/Home.css'
+import Navbar from '../../components/Navbar/Navbar';
+import Footer from '../../components/Footer/Footer';
 
 
 const Home = () =>{
   return (
     <>
+    <Navbar/>
     <div className='container1'>
      <div class="row1">
         <div class="imgWrapper">
@@ -63,7 +66,7 @@ const Home = () =>{
     </div>
     </div>
 
-   
+   <Footer/>
     </>
   )
 
