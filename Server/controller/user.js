@@ -46,9 +46,10 @@ const userCtrl = {
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
   
-        return res.json({
+        return res.json({msg:
           accessToken,
           message: "User created successfully and Email sent successfully",
+          user_id:newUser.id,
           ...result
         });
       } else {
@@ -86,7 +87,7 @@ const userCtrl = {
                   maxAge: 7 * 24 * 60 * 60 * 1000,
                 });
           
-                return res.json({ accessToken });
+                return res.json({message: "Logged in successfully", accessToken }, );
               }
             }
 

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MDBBtn,
   MDBContainer,
@@ -9,8 +10,31 @@ import {
   MDBCol,
   MDBInput,
 } from "mdb-react-ui-kit";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 
-const sendOtp = () => {
+
+const SendOtp = () => {
+  const {id} = useParams();
+  const [data, setData] = useState({userId: id,otp: ""});
+  const history = useNavigate();
+
+  const onChangeInput = e =>{
+    const{name, value} = e.target;
+    setData({...data, [name]:value})
+    console.log(data)
+  }
+
+  const verifyOtp = async e =>{
+    e.preventDefault()
+    try{
+      const response = await axios.post('http://localhost:8000/verifyOTP',{...data})
+      alert(response.data.message);
+       history('/login');
+    }catch(err){
+      alert(err.response.data.msg)
+    }
+  }
   const containerStyles = {
     display: "flex",
     alignItems: "center",
@@ -38,12 +62,13 @@ const sendOtp = () => {
   };
 
   return (
+    <form onSubmit={verifyOtp}>
     <MDBContainer style={mainContainer}>
       <MDBCard style={{ border: "none" }}>
         <MDBRow className="g-0">
           <MDBCol md="6">
             <MDBCardImage
-              src="./images/pic1.jpg"
+              src="../images/pic1.jpg"
               alt="login form"
               className="rounded-start w-100 h-100"
               style={{ objectFit: "cover" }}
@@ -66,7 +91,7 @@ const sendOtp = () => {
               </h5>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <label
-                  htmlFor="password"
+                  htmlFor="id"
                   style={{
                     marginBottom: "5px",
                     marginLeft: "150px",
@@ -78,8 +103,10 @@ const sendOtp = () => {
                 <MDBInput
                   wrapperClass="mb-2"
                   id="formControlLg"
-                  type="password"
+                  type="text"
                   size="lg"
+                  name="userId"
+                  value={id}
                   style={{
                     background: "none",
                     border: "none",
@@ -87,6 +114,7 @@ const sendOtp = () => {
                     width: "300px",
                     margin: "auto",
                   }}
+                  
                 />
               </div>
               <div style={{ display: "flex", flexDirection: "column" }}>
@@ -103,7 +131,10 @@ const sendOtp = () => {
                 <MDBInput
                   wrapperClass="mb-2"
                   id="formControlLg"
-                  type="re-enterpassword"
+                  type="text"
+                  name="otp"
+                  value={data.otp}
+                  onChange={onChangeInput}
                   size="lg"
                   style={{
                     background: "none",
@@ -113,6 +144,7 @@ const sendOtp = () => {
                     margin: "auto",
                   }}
                 />
+               
               </div>
               <MDBBtn
                 className="mb-4 px-5"
@@ -135,7 +167,8 @@ const sendOtp = () => {
         </MDBRow>
       </MDBCard>
     </MDBContainer>
+    </form>
   );
 };
 
-export default sendOtp;
+export default SendOtp;

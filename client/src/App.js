@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home/home";
 import Register from "./components/Register";
-import Login from "./components/login";
-import SendOtp from "./components/sendOtp";
+import Login from "./components/Login";
+import SendOtp from "./components/SendOtp";
 
 const App = () => {
   return (
@@ -13,7 +13,7 @@ const App = () => {
       <Route path="/" element={<Home/>}/>
       <Route path="/register" element={<Register/>}/>
       <Route path="/login" element={<Login/>}/>
-      <Route path="/sendOTP" element= {<SendOtp/>}/>
+      <Route path="/sendOtp/:id" element= {<SendOtp/>}/>
     </Routes>
     </BrowserRouter>
     </>

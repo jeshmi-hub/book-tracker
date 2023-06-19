@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Link} from "react-router-dom";
+import { useNavigate, Link} from "react-router-dom";
 import {
   MDBBtn,
   MDBContainer,
@@ -12,6 +12,8 @@ import {
 } from "mdb-react-ui-kit";
 import axios from 'axios';
 
+
+
 const Register = () => {
     const [data, setData] = useState({
         firstName: "",
@@ -21,6 +23,8 @@ const Register = () => {
         password: "",
         confirmPassword: ""
     })
+    const history = useNavigate();
+   
 
     const onChangeInput = e => {
         const{name, value} = e.target;
@@ -30,9 +34,13 @@ const Register = () => {
     const registerSubmit = async e =>{
         e.preventDefault()
         try{
-            await axios.post(' http://localhost:8000/register',{...data})
+            const response = await axios.post('http://localhost:8000/register',{...data})
+            console.log(response);
             localStorage.setItem('firstLogin', true)
-            alert('Verification otp sent to your email');
+            console.log("response",response.data.user_id)
+            alert(response.data.message);
+            history(`/sendOtp/${response.data.user_id}`);
+            
 
         }catch(err){
             alert(err.response.data.msg)

@@ -1,5 +1,5 @@
 import React,{useState} from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   MDBBtn,
   MDBContainer,
@@ -13,12 +13,13 @@ import {
 import axios from "axios";
 
 
+
 const Login = () => {
     const[data, setData] = useState({
         email: "",
         password: ""
     })
-
+    const history = useNavigate();
     const onChangeInput = e =>{
         const {name, value} = e.target;
         setData({...data, [name]:value})
@@ -27,9 +28,10 @@ const Login = () => {
     const loginSubmit = async e =>{
         e.preventDefault()
         try{
-            await axios.post('http://localhost:8000/login', {...data})
+            const response = await axios.post('http://localhost:8000/login', {...data})
             localStorage.setItem('firstLogin', true)
-
+            alert(response.data.message)
+            history('/')
         }catch(err){
             alert(err.response.data.msg)
 
