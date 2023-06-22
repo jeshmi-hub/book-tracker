@@ -34,20 +34,20 @@ const userCtrl = {
   
         const verificationURL = `${process.env.BASE_URL}users/${newUser.id}/verify/${token}`;
         console.log(verificationURL);
-        const accessToken = createAccessToken({ id: newUser.id });
-        const refreshToken = createRefreshToken({ id: newUser.id });
+        const accesstoken = createAccessToken({ id: newUser.id });
+        const refreshtoken = createRefreshToken({ id: newUser.id });
   
         const result = await sendOTPVerificationEmail({ id: newUser.id, email: newUser.email, res });
 
   
-        res.cookie('refreshToken', refreshToken, {
+        res.cookie('refreshtoken', refreshtoken, {
           httpOnly: true,
           path: '/refresh_token',
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         });
   
-        return res.json({msg:
-          accessToken,
+         return res.json({
+          accesstoken,
           message: "User created successfully and Email sent successfully",
           user_id:newUser.id,
           ...result
@@ -78,16 +78,16 @@ const userCtrl = {
               if(existingUser.verified === false){
                 return res.status(400).json({msg:"Verify Email first"})
               }else{
-                const accessToken = createAccessToken({ id: existingUser.id });
-                const refreshToken = createRefreshToken({ id: existingUser.id });
+                const accesstoken = createAccessToken({ id: existingUser.id });
+                const refreshtoken = createRefreshToken({ id: existingUser.id });
           
-                res.cookie('refreshToken', refreshToken, {
+                res.cookie('refreshtoken', refreshtoken, {
                   httpOnly: true,
                   path: '/refresh_token',
                   maxAge: 7 * 24 * 60 * 60 * 1000,
                 });
           
-                return res.json({message: "Logged in successfully", accessToken }, );
+                 return res.json({accesstoken, refreshtoken});
               }
             }
 
@@ -103,24 +103,27 @@ const userCtrl = {
     ,
     logout: async(req,res)=>{
       try{
-        res.clearCookie('refreshToken', {path:'/refresh_token'})
+        res.clearCookie('refreshtoken', {path:'/refresh_token'})
         return res.json({msg: "Logged out"})
-
       }catch(err){
         return res.status(500).json({msg:err.message})
       }
     },
     refreshToken: (req,res)=>{
+      console.log("rrequest>>>>>>>",req)
       try {
-        const rf_token = req.cookies.refreshToken;
+        const rf_token = req.body.refreshToken;
+        console.log("refresh token",rf_token)
         if(!rf_token) return res.status(400).json({msg: "Please Login or Register"})
 
         jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) =>{
-            if(err) return res.status(400).json({msg: "Please Login or Register"})
+            if(err) return res.status(400).json({msg: err})
+            const {id} = user
 
-            const accesstoken = createAccessToken({id: user.id})
+            const accesstoken = createAccessToken({id})
+            console.log({id})
 
-            res.json({accesstoken})
+            return res.json({accesstoken, refreshtoken: rf_token})
         })
 
     } catch (err) {
@@ -215,7 +218,7 @@ resendOTPVerificationCode: async (req, res) => {
 getOneUser: async(req,res)=>{
   try {
     const user = await User.findOne({
-      where: { id: req.params.id },
+      where: { id: req.user.id },
       attributes: { exclude: ['password', 'confirmPassword'] }, // Excluding the 'password' field
     });
 
@@ -234,7 +237,7 @@ getAllUser: async(req,res)=>{
     const users = await User.findAll();
     return res.status(200).json(users);
   }catch(err){
-    return res.status(500).json(err);
+    return res.status(500).json({msg: err.message});
   }
 },
 updateUser: async(req,res)=>{
@@ -248,7 +251,7 @@ updateUser: async(req,res)=>{
     res.status(200).json(updateUser);
 
   }catch(err){
-    res.status(500).json(err.message);
+    res.status(500).json({msg:err.message});
 
   }
   

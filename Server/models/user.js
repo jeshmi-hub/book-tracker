@@ -34,6 +34,7 @@
             defaultValue:false
         }
     });
+    
     return User;
 
  }

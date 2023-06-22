@@ -10,11 +10,15 @@ import {
   MDBCol,
   MDBInput,
 } from "mdb-react-ui-kit";
+//import { GlobalState } from "../GlobalState";
 import axios from "axios";
 
 
 
+
 const Login = () => {
+  //const {token} = useContext(GlobalState);
+  //console.log("from login",token)
     const[data, setData] = useState({
         email: "",
         password: ""
@@ -29,8 +33,9 @@ const Login = () => {
         e.preventDefault()
         try{
             const response = await axios.post('http://localhost:8000/login', {...data})
-            localStorage.setItem('firstLogin', true)
-            alert(response.data.message)
+            localStorage.setItem('firstLogin',true )
+            alert(response.data.refreshtoken)
+            localStorage.setItem('refreshToken',response.data.refreshtoken)
             history('/')
         }catch(err){
             alert(err.response.data.msg)
