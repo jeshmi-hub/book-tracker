@@ -1,11 +1,40 @@
-import React , {useEffect} from 'react'
+import React , {useContext, useEffect} from 'react'
 import '../Navbar/Navbar.css';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import $ from 'jquery';
+import { GlobalState } from '../../GlobalState';
+import axios from 'axios'
 
 const Navbar = () => {
+  const state = useContext(GlobalState)
+  const [isLogged, setIsLogged] = state.userAPI.isLogged
+  const [isAdmin, setIsAdmin] = state.userAPI.isAdmin
 
-  function animation(){
+
+  const logoutUser = async()=>{
+    await axios.get('http://localhost:8000/logout')
+    localStorage.clear()
+    window.location.href = "/";
+  }
+
+  const adminRouter = () =>{
+    return (
+      <>
+      <li><Link to="">Reviews</Link></li>
+      <li><Link to="">Status</Link></li>
+      </>
+    )
+  }
+
+  const loggedRouter=()=>{
+    return (
+      <>
+      <li><Link to="">Books</Link></li>
+      <li><Link to="/" onClick={logoutUser}>Logout</Link></li>
+      </>
+    )
+  }
+  function animation(){ 
     var tabsNewAnim = $('#navbarSupportedContent');
     var activeItemNewAnim = tabsNewAnim.find('.active');
     var activeWidthNewAnimHeight = activeItemNewAnim.innerHeight();
@@ -43,11 +72,13 @@ const Navbar = () => {
     
   }, []);
 
+
+
   return (
   <nav className="navbar navbar-expand-lg navbar-mainbg">
        <div className="container">
       <NavLink className="navbar-brand navbar-logo text-white" style={{fontSize: "28px"}} to="/" exact>
-       Arbyte Library
+       {isAdmin ? 'Admin' : 'Arbyte Library'}
       </NavLink>
     
     
@@ -70,41 +101,13 @@ const Navbar = () => {
             
             <li className="nav-item active">
               <NavLink className="nav-link" to="/" exact>
-                <i 
-                className="fas fa-tachometer-alt">
-                </i>Home
+                {isAdmin ? 'Add Books': 'Book'}
               </NavLink>
             </li>
+            {isAdmin && adminRouter()}{
+              isLogged ? loggedRouter(): <li><NavLink className="nav-link" to="/login">Login</NavLink></li>
 
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/about" exact>
-                <i 
-                className="far fa-address-book">
-                </i>About
-              </NavLink> 
-            </li>
-
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/service" exact>
-                <i 
-                className="far fa-book">
-                </i>Book
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/testimonial" exact>
-                <i 
-                className="far fa-chart-bar">
-                </i>Testimonial
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/contact" exact>
-                <i 
-                className="far fa-copy">
-                </i>Contact Us
-              </NavLink>
-            </li>
+              }   
         </ul>
       </div>
       </div>

@@ -37,6 +37,8 @@ const bookRoute = require('./routes/book');
 app.use('/', bookRoute)
 const reviewRoute = require('./routes/review');
 app.use('/', reviewRoute)
+const scheduleRoute = require("./routes/scheduler");
+app.use('/', scheduleRoute) 
 const port = process.env.PORT || 8000
 
 

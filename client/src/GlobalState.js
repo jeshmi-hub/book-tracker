@@ -1,4 +1,5 @@
 import React, {createContext, useState, useEffect} from 'react';
+import UserAPI from './api/UserAPI';
 import axios from 'axios';
 
 
@@ -10,11 +11,10 @@ export const DataProvider = ({children}) =>{
     const [token, setToken] = useState(false)
 
     const refreshToken = async()=>{
-        console.log("into refresh tokeb function")
             const res = await axios.post('http://localhost:8000/refresh_token',{refreshToken:localStorage.getItem('refreshToken')});
             console.log("response from refresh token function",res)
             setToken(res.data.accesstoken);
-            console.log(res.data.refreshtoken);
+            console.log(token)
          
         }
     useEffect(()=>{
@@ -24,7 +24,8 @@ export const DataProvider = ({children}) =>{
     },[])
 
     const state={
-        token: [token, setToken]
+        token: [token, setToken],
+        userAPI : UserAPI(token)
     }
 
     return (
