@@ -2,31 +2,29 @@ const sendEmail = require('../utils/sendEmail');
 const cron = require("node-cron");
 
 const scheduleEmail = {
-  scheduler:
-   async (req, res) => {
-    const { email } = req.query;
+  scheduler: async (req, res) => {
     try {
+      const { email } = req.query;
       const mailOptions = {
         from: process.env.USER,
-        to: email,
+        to: "jeshmi.r@arbyte.com.np",
         subject: "About returning the book that you have borrowed",
         html: "<p>Return book</p>"
-      }
+      };
 
-      await sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
-
+      cron.schedule('*/15 * * * *', async () => {
+        try {
+          await sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);
+          console.log("Email sent successfully");
+        } catch (err) {
+          console.log("Error sending email:", err);
+        }
+      });
+      res.status(200).json("Email will be sent after 15 minutes");
     } catch (err) {
-      throw new Error(err.message);
+      console.log("Error:", err);
     }
-
-    cron.schedule("* * * * *", () => {
-      task();
-    });
   }
-}
-
-const task = () => {
-  console.log("Running a task every minute");
-}
+};
 
 module.exports = scheduleEmail;

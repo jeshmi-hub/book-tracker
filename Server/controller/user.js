@@ -87,7 +87,7 @@ const userCtrl = {
                   maxAge: 7 * 24 * 60 * 60 * 1000,
                 });
           
-                 return res.json({accesstoken, refreshtoken});
+                 return res.json({refreshtoken, accesstoken, msg:"Logged in successfully"});
               }
             }
 

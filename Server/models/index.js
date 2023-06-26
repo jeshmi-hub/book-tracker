@@ -32,11 +32,14 @@ db.token = require('./token')(sequelize, DataTypes)
 db.otp = require('./userOTPVerification')(sequelize, DataTypes)
 db.book = require('./book')(sequelize, DataTypes)
 db.review = require('./review')(sequelize, DataTypes)
+db.bookBorrow = require('./bookBorrow')(sequelize, DataTypes)
 
 db.users.hasOne(db.token, {foreignKey: 'userId', as: 'token'});
 db.users.hasOne(db.otp, {foreignKey: 'userId', as:'otp'});
-db.users.hasMany(db.review,{foreignKey: 'userId'})
+db.users.hasMany(db.review,{foreignKey: 'userId'});
 db.review.belongsTo(db.users,{foreignKey: 'userId'});
+db.users.hasMany(db.bookBorrow, {foreignKey: 'userId'});
+db.bookBorrow.belongsTo(db.users, {foreignKey: 'userId'});
 
 
 

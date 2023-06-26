@@ -2,7 +2,8 @@ module.exports = (sequelize, DataTypes) =>{
     const Book = sequelize.define("book", {
         bookTitle :{
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         bookAuthor:{
             type: DataTypes.STRING,
