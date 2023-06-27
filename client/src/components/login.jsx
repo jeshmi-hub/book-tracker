@@ -33,7 +33,8 @@ const Login = () => {
         e.preventDefault()
         try{
             const response = await axios.post('http://localhost:8000/login', {...data})
-            localStorage.setItem('firstLogin',true )
+            localStorage.setItem('firstLogin',true)
+            localStorage.setItem('accesstoken',response.data.accesstoken)
             alert(response.data.msg)
             localStorage.setItem('refreshToken',response.data.refreshtoken)
             history('/')

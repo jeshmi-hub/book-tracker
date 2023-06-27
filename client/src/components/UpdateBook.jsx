@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer/Footer";
 import axios from "axios";
+import { useParams } from "react-router-dom";
 
-const AddBook = () => {
+const UpdateBook = () => {
   const button = {
     backgroundColor: "#707672",
     border: "none",
@@ -58,6 +59,7 @@ const AddBook = () => {
     margin: "auto",
     textAlign: "center",
   };
+
   const token = localStorage.getItem('accesstoken')
   const [value, setValue] = useState({
      bookTitle : "",
@@ -67,6 +69,7 @@ const AddBook = () => {
   })
 
   const [image,setImg] = useState(null);
+  const {id} = useParams();
   const upload = async e =>{
     try{
       const formData = new FormData();
@@ -92,7 +95,7 @@ const AddBook = () => {
     e.preventDefault();
     const img = await upload();
     try{
-      const response = await axios.post("http://localhost:8000/postBook",
+      const response = await axios.put(`http://localhost:8000/updateBook/${id}`,
       {...value,
       image: image ? img:""}, {
         headers:{
@@ -101,19 +104,46 @@ const AddBook = () => {
         }
       });
 
-      alert(response.data.msg);
+      alert(response.data);
 
     }catch(err){
       alert(err.response.data.msg);
     }
   }
+
  
+
+const loadOneBook = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8000/getOneBook/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      });
+      setValue(response.data); // Update this line
+    } catch (err) {
+      alert(err.response.data.msg);
+    }
+  };
+  
+ 
+  
+
+  useEffect(() => {
+    loadOneBook();
+  }, []);
+
+ 
+  if (!value) {
+    return null; 
+  }
   return (
     <>
       <Navbar />
       <div style={card}>
         <h1 style={h1}>Admin Panel</h1>
-        <h2 style={h2}>Add Books</h2>
+        <h2 style={h2}>Update Book</h2>
         <form onSubmit={handleSubmit}>
           <div class="mb-3" style={labelContainer}>
             <label for="exampleInputEmail1" class="form-label" style={label}>
@@ -123,6 +153,7 @@ const AddBook = () => {
               type="text"
               name="bookTitle"
               onChange={handleChange}
+              value={value.bookTitle}
               class="form-control"
               id="exampleInputEmail1"
               aria-describedby="emailHelp"
@@ -137,6 +168,7 @@ const AddBook = () => {
               type="text"
               name="bookAuthor"
               onChange={handleChange}
+              value={value.bookAuthor}
               class="form-control"
               id="exampleInputPassword1"
               style={inputStyle}
@@ -176,9 +208,6 @@ const AddBook = () => {
           </div>
           <div class="d-flex justify-content-center">
             <button type="submit" class="btn btn-primary" style={button}>
-              Add
-            </button>
-            <button type="submit" class="btn btn-primary" style={button}>
               Update
             </button>
           </div>
@@ -189,4 +218,4 @@ const AddBook = () => {
   );
 };
 
-export default AddBook;
+export default UpdateBook;

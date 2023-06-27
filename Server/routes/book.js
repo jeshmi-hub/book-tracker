@@ -7,7 +7,7 @@ const authAdmin = require('../middleware/authAdmin');
 
 router.post("/postBook",auth, authAdmin, bookCtrl.postBook);
 router.get("/getOneBook/:id",auth, authAdmin, bookCtrl.getOneBook);
-router.get("/getAllBooks", auth, authAdmin,bookCtrl.getAllBooks);
+router.get("/getAllBooks", bookCtrl.getAllBooks);
 router.put("/updateBook/:id", auth, authAdmin, bookCtrl.updateBook);
 router.delete("/deleteBook/:id",auth,authAdmin, bookCtrl.deleteBook);
 

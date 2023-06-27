@@ -38,10 +38,8 @@ app.post('/upload', upload.single('file'), function(req,res){
 const scheduleEmail = async (req, res) => {
     try {
       const { email } = req.query;
-      const { id } = req.params; // Assuming you have a route parameter for the book borrow ID
-  
-      // Retrieve the BookBorrow data from the database
-      const bookBorrow = await BookBorrow.findByPk(id); // Replace `id` with the actual book borrow ID
+      const { id } = req.params; 
+      const bookBorrow = await BookBorrow.findByPk(id); 
   
       if (!bookBorrow) {
         return res.status(404).json({ error: 'Book borrow not found' });
@@ -58,14 +56,14 @@ const scheduleEmail = async (req, res) => {
   
       const currentDate = new Date();
       const borrowDate = new Date(createdAt);
-      borrowDate.setDate(borrowDate.getDate() + 15); // Add 15 days to the borrow date
+      borrowDate.setDate(borrowDate.getDate() + 15); 
   
-      // Calculate the time difference in milliseconds between the current date and the return date
+      
       const timeDifference = borrowDate.getTime() - currentDate.getTime();
   
-      // If the time difference is greater than 0, schedule the email after the specified delay
+      
       if (timeDifference > 0) {
-        const cronPattern = `*/${Math.floor(timeDifference / 1000)} * * * *`; // Convert timeDifference to cron schedule format
+        const cronPattern = `*/${Math.floor(timeDifference / 1000)} * * * *`; 
         cron.schedule(cronPattern, async () => {
           try {
             await sendEmail(mailOptions.to, mailOptions.subject, mailOptions.html);

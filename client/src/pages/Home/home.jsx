@@ -1,10 +1,34 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import '../Home/Home.css'
 import Navbar from '../../components/Navbar/Navbar';
 import Footer from '../../components/Footer/Footer';
 
-
 const Home = () =>{
+    const [reviews, setReviews] = useState([]);
+    const [refresh, setRefresh] = useState(false);
+    const token = localStorage.getItem('accesstoken')
+
+    const getData = async(e) =>{
+      const res = await fetch("http://localhost:8000/getAllReviews",{
+          method: "GET",
+          headers: {
+              "Content-Type" :"application/json",
+              "Authorization" : token
+          }
+      })
+      const data = await res.json();
+      if(res.status === 404 || !data){
+          alert(res.data.msg)
+      }else{
+          setReviews(data);
+          console.log(data)
+      }
+    }
+  
+    useEffect(()=>{
+      getData();
+    },[refresh]);
+
   return (
     <>
     <Navbar/>
@@ -36,31 +60,19 @@ const Home = () =>{
       <h1>Reviews</h1>
     <div className='container2'>
         <div className='row2'>
-            <div className='card1'>
-                <img src='../images/image1.webp' alt='image1'/>
-                <h4>John Doe</h4>
-                <p>User feedback refers to all the quantitative as well as qualitative information gathered from customers that highlights their experience. It includes what they like and don’t like, how they think about a product, and what they want. It’s very important for businesses that want to make changes based on what their customers want to get user feedback from them. It should be kept in mind that user feedback may differ from customer to customer so a business needs to be able to identify trends and patterns to make informed decisions.</p>
-            </div>
-            <div className='card1'>
-                <img src='../images/image2.webp' alt='image1'/>
-                <h4>John Doe</h4>
-                <p>User feedback refers to all the quantitative as well as qualitative information gathered from customers that highlights their experience. It includes what they like and don’t like, how they think about a product, and what they want. It’s very important for businesses that want to make changes based on what their customers want to get user feedback from them. It should be kept in mind that user feedback may differ from customer to customer so a business needs to be able to identify trends and patterns to make informed decisions.</p>
-            </div>
-            <div className='card1'>
-                <img src='../images/image3.jpeg' alt='image1'/>
-                <h4>John Doe</h4>
-                <p>User feedback refers to all the quantitative as well as qualitative information gathered from customers that highlights their experience. It includes what they like and don’t like, how they think about a product, and what they want. It’s very important for businesses that want to make changes based on what their customers want to get user feedback from them. It should be kept in mind that user feedback may differ from customer to customer so a business needs to be able to identify trends and patterns to make informed decisions.</p>
-            </div>
-            <div className='card1'>
-                <img src='../images/image3.jpeg' alt='image1'/>
-                <h4>John Doe</h4>
-                <p>User feedback refers to all the quantitative as well as qualitative information gathered from customers that highlights their experience. It includes what they like and don’t like, how they think about a product, and what they want. It’s very important for businesses that want to make changes based on what their customers want to get user feedback from them. It should be kept in mind that user feedback may differ from customer to customer so a business needs to be able to identify trends and patterns to make informed decisions.</p>
-            </div>
-            <div className='card1'>
-                <img src='../images/image3.jpeg' alt='image1'/>
-                <h4>John Doe</h4>
-                <p>User feedback refers to all the quantitative as well as qualitative information gathered from customers that highlights their experience. It includes what they like and don’t like, how they think about a product, and what they want. It’s very important for businesses that want to make changes based on what their customers want to get user feedback from them. It should be kept in mind that user feedback may differ from customer to customer so a business needs to be able to identify trends and patterns to make informed decisions.</p>
-            </div>
+            {
+                reviews && reviews.map((review)=>{
+                    return(
+                    <div className='card1' key={review.id}>
+                       <img src={`../images/${review.image}`} alt='image1'/>
+                       <h4>{review.username}</h4>
+                      <p>{review.feeback}</p>
+                    </div>
+
+                    )
+                })
+            }
+            
         </div>
 
     </div>

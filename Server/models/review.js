@@ -3,6 +3,9 @@ module.exports = (sequelize, DataTypes) =>{
          userId:{
             type: DataTypes.INTEGER
          },
+         username:{
+            type: DataTypes.STRING
+         },
          feeback:{
             type: DataTypes.TEXT,
             allowNull: false

@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const db = require("../models");
 const Review = db.review;
 const User = db.users;
@@ -6,15 +7,25 @@ const Op = db.Sequelize.Op;
 
 const reviewCtrl ={
     postReview: async(req,res)=>{
-    const {userId, feeback, image} = req.body;
+    const token = req.headers.authorization.split(' ')[1];
+    const {feeback, image} = req.body;
     try{
-        const user = await User.findByPk(userId);
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        const userId = decoded.id;
+        const user = await User.findByPk(userId,{
+            attributes: ['id', 'username']
+        });
         if(!user){
             return res.status(404).json({error: 'User not found'});
         }
-
-        const review = await Review.create({userId, feeback, image});
-        res.status(201).json(review);
+        const username = user.username;
+        const review = await Review.create({
+            userId: user.id, 
+            username,
+            feeback, 
+            image
+        });
+        return res.status(201).json("Review added successfully");
         }catch(err){
             console.log(err);
            return res.status(500).json({msg:err.message})
@@ -24,9 +35,7 @@ const reviewCtrl ={
         const reviewId = req.params.id;
 
         try{
-            const review = await Review.findByPk(reviewId, {
-                include: {model: User, attributes: ['id', 'username']}
-            });
+            const review = await Review.findByPk(reviewId)
 
             if(!review){
                 return res.status(404).json({msg: 'Review not found'})
