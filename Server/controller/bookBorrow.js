@@ -58,6 +58,57 @@ const borrowBookCtrl = {
     }catch(err){
         return res.status(500).json({msg: err.message})
     }
+  },
+
+  addBook:async (req, res) => {
+    const token = req.headers.authorization.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const userId = decoded.id;
+  
+      const user = await User.findByPk(userId);
+  
+      await BookBorrow.update(
+        {
+          cart: req.body.cart
+        },
+        {
+          where: {
+            id: req.params.id
+          }
+        }
+      );
+  
+      return res.json({ msg: "Added to Cart" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  deleteBook:async(req,res)=> {
+    const token = req.headers.authorization.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const userId = decoded.id;
+  
+      const user = await User.findByPk(userId);
+  
+      await BookBorrow.update(
+        {
+          cart: req.body.cart
+        },
+        {
+          where: {
+            id: req.params.id
+          }
+        }
+      );
+  
+      return res.json({ msg: "Removed from cart" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+
   }
 };
 

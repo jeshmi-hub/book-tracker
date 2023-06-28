@@ -29,7 +29,9 @@ const Navbar = () => {
   const loggedRouter=()=>{
     return (
       <>
-      <li><Link to="">Books</Link></li>
+      <li><Link to="/">Books</Link></li>
+      <li><Link to=""><i class="fa-sharp fa-solid fa-cart-shopping"></i>
+      <span className="cart-icon">1</span></Link></li>
       <li><Link to="/" onClick={logoutUser}>Logout</Link></li>
       </>
     )
@@ -101,7 +103,7 @@ const Navbar = () => {
             
             <li className="nav-item active">
               <NavLink className="nav-link" to="/" exact>
-                {isAdmin ? 'Add Books': 'Book'}
+                {isAdmin ? 'Add Books': 'Home'}
               </NavLink>
             </li>
             {isAdmin && adminRouter()}{
