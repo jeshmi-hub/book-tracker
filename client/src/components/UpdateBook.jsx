@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer/Footer";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 
 const UpdateBook = () => {
   const button = {
@@ -70,6 +70,7 @@ const UpdateBook = () => {
 
   const [image,setImg] = useState(null);
   const {id} = useParams();
+  const history =useNavigate();
   const upload = async e =>{
     try{
       const formData = new FormData();
@@ -105,6 +106,7 @@ const UpdateBook = () => {
       });
 
       alert(response.data);
+      history("/allBooks");
 
     }catch(err){
       alert(err.response.data.msg);

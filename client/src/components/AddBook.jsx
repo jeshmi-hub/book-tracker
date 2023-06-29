@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer/Footer";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 const AddBook = () => {
   const button = {
     backgroundColor: "#707672",
@@ -102,6 +102,7 @@ const AddBook = () => {
       });
 
       alert(response.data.msg);
+      history("/allBooks")
 
     }catch(err){
       alert(err.response.data.msg);

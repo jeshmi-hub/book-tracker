@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate,Link } from "react-router-dom";
 import {
   MDBBtn,
   MDBContainer,
@@ -10,33 +9,10 @@ import {
   MDBCol,
   MDBInput,
 } from "mdb-react-ui-kit";
-import { useParams } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from 'axios'
 
-
-const SendOtp = () => {
-  const {id} = useParams();
-  const [data, setData] = useState({userId: id,otp: ""});
-  const history = useNavigate();
-
-  const onChangeInput = e =>{
-    const{name, value} = e.target;
-    setData({...data, [name]:value})
-    console.log(data)
-  }
-
-  const verifyOtp = async e =>{
-    e.preventDefault()
-    try{
-      const response = await axios.post('http://localhost:8000/verifyOTP',{...data})
-      alert(response.data.message);
-       history('/login');
-    }catch(err){
-      alert(err.response.data.message)
-    }
-  }
-
-
+const ResendOTP = () => {
   const containerStyles = {
     display: "flex",
     alignItems: "center",
@@ -46,7 +22,7 @@ const SendOtp = () => {
   const spanStyles = {
     fontFamily: "'Dancing Script', cursive",
     fontWeight: "bold",
-    fontSize: "2rem",
+    fontSize: "2rem"
   };
   const h5 = {
     fontFamily: "'Poppins', sans-serif",
@@ -59,21 +35,40 @@ const SendOtp = () => {
     justifyContent: "center",
   };
 
-  const mainContainer = {
-    margin: "150px auto",
-  };
+  const mainContainer ={
+    margin: "150px auto"
+  }
+  
+  const {id} = useParams();
+  const[data, setData] = useState({userId: id, email:""});
+  const history = useNavigate();
 
+  const onChangeInput = e =>{
+    const{name, value} = e.target;
+    setData({...data, [name]: value})
+    console.log(data)
+  }
+
+  const resendVerifyOtp = async e =>{
+    e.preventDefault()
+    try{
+      const response = await axios.post('http://localhost:8000/resendVerificationCode',{...data})
+      alert(response.data.message)
+      history(`/sendOtp/${id}`);
+    }catch(err){
+      alert(err.response.data.message)
+    }
+  }
   return (
-    <form onSubmit={verifyOtp}>
+    <form onSubmit={resendVerifyOtp}>
     <MDBContainer style={mainContainer}>
-      <MDBCard style={{ border: "none" }}>
+      <MDBCard style={{border:"none"}}>
         <MDBRow className="g-0">
           <MDBCol md="6">
             <MDBCardImage
-              src="../images/pic1.jpg"
+              src="../images/book-gf66f35e9a_640.jpg"
               alt="login form"
               className="rounded-start w-100 h-100"
-              style={{ objectFit: "cover" }}
             />
           </MDBCol>
 
@@ -89,8 +84,9 @@ const SendOtp = () => {
               </div>
 
               <h5 className="fw-normal pb-3 text-center" style={h5}>
-                Send Otp
+                Resend OTP
               </h5>
+              <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", flexDirection: "column" }}>
                 <label
                   htmlFor="id"
@@ -119,34 +115,32 @@ const SendOtp = () => {
                   
                 />
               </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
                 <label
-                  htmlFor="password"
+                  htmlFor="email"
                   style={{
                     marginBottom: "5px",
                     marginLeft: "150px",
                     fontFamily: "'Poppins', sans-serif",
                   }}
                 >
-                  OTP Code
+                  Email address
                 </label>
                 <MDBInput
-                  wrapperClass="mb-2"
-                  id="formControlLg"
-                  type="text"
-                  name="otp"
-                  value={data.otp}
-                  onChange={onChangeInput}
-                  size="lg"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    borderBottom: "2px solid #707672",
-                    width: "300px",
-                    margin: "auto",
-                  }}
-                />
-               
+                 wrapperClass="mb-2"
+                 id="formControlLg"
+                 type="text"
+                 name="email"
+                 value={data.email}
+                 onChange={onChangeInput}
+                 size="lg"
+                 style={{
+                 background: "none",
+                 border: "none",
+                 borderBottom: "2px solid #707672",
+                 width: "300px",
+                 margin: "auto",
+                 }}
+                 />
               </div>
               <MDBBtn
                 className="mb-4 px-5"
@@ -162,27 +156,8 @@ const SendOtp = () => {
                   fontSize: "15px",
                 }}
               >
-                Send
+                Send Reset Code
               </MDBBtn>
-
-              <p
-                className="mb-5 pb-lg-2 text-center"
-                style={{
-                  color: "#393f81",
-                  fontFamily: "'Poppins', sans-serif",
-                }}
-              >
-                <Link
-                  to={`/resendOtp/${id}`}
-                  style={{
-                    color: "#393f81",
-                    fontFamily: "'Poppins', sans-serif",
-                  }}
-                  
-                >
-                 Resend OTP
-                </Link>
-              </p>
             </MDBCardBody>
           </MDBCol>
         </MDBRow>
@@ -192,4 +167,4 @@ const SendOtp = () => {
   );
 };
 
-export default SendOtp;
+export default ResendOTP;

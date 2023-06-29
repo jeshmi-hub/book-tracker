@@ -205,8 +205,11 @@ resendOTPVerificationCode: async (req, res) => {
       return res.status(400).json({ msg: "Empty user details are not allowed" });
     } else {
       await UserOTPVerfication.destroy({ where: { userId } });
-      sendOTPVerificationEmail({ id: userId, email,res });
-      
+      sendOTPVerificationEmail({ id: userId, email});
+      res.json({
+        status: "Success",
+        message: "Otp has been sent to your email"
+      })
     }
   } catch (err) {
     res.json({

@@ -1,17 +1,12 @@
-import React,{useEffect, useState}from 'react';
+import React,{ useState}from 'react';
 import BorrowBookAPI from '../../api/BorrowBookAPI';
-import axios from 'axios';
+
 
 function Cart() {
-  const [token, setToken] = useState(false);
-  const refreshToken = async()=>{
-    setToken(res.data.refreshToken)
-  };
+  const [token, setToken] = useState(localStorage.getItem('refreshToken'));
 
-  useEffect(()=>{
-    const firstLogin = localStorage.getItem('firstLogin');
-    if(firstLogin) refreshToken();
-  },[]);
+
+  
 
   const state = {
     token: [token, setToken],
@@ -19,10 +14,23 @@ function Cart() {
   }
 
   const [borrowBook, setIsBorrowed] = state.bookBorrow.borrowBook;
-  const [total, setTotal] = useState(0)
+  const removeBorrowedBook = state.bookBorrow.removeBorrowedBook
 
   return (
     <div>
+      {borrowBook.map((bok)=>{
+         <div className="detail cart" key={bok.id}>
+         <div className="box-detail">
+           <h2>{bok.username}</h2>
+           <h3>{bok.email}</h3>
+           <div className="delete" onClick={() => removeBorrowedBook(bok.id)}>
+                X
+            </div>
+           </div>
+           </div>
+
+      })
+      }
       
     </div>
   )

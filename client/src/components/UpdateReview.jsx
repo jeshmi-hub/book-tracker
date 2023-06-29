@@ -3,6 +3,7 @@ import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer/Footer";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const UpdateReview = () => {
   const button = {
@@ -89,6 +90,7 @@ const UpdateReview = () => {
             }
         });
         alert(response.data);
+        history("/allReviews");
     }catch(err){
         alert(err.response.data.msg);
     }

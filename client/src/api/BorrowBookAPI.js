@@ -52,9 +52,30 @@ function BorrowBookAPI(token){
         }
         console.log(borrowBook)
     }
+
+    const removeBorrowedBook = async id=>{
+        if(window.confirm("Do you want to return the book?")){
+            console.log("book", borrowBook)
+            const newArr = borrowBook.filter((data)=>{
+                console.log(data.id)
+                return data.id !== id;
+            })
+
+            await axios.patch(`http://localhost:8000/deleteBook/${id}`, {cart: [...newArr]}, {
+                headers: {
+                    "Content-Type" : "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+            setIsBorrwoed(newArr)
+            console.log("after", borrowBook)
+        }
+    }
     return{
         isLogged: [isLogged, setIsLogged],
         borrowBook: [borrowBook,setIsBorrwoed],
+        addBorrowedBook : addBorrowedBook,
+        removeBorrowedBook: removeBorrowedBook,
         totalBookBorrowed: [totalBookBorrowed, setTotalBookBorrowed]
     }
 
