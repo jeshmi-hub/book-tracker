@@ -53,7 +53,7 @@ const UpdateReview = () => {
     margin: "auto",
     textAlign: "center",
   };
-
+  const history = useNavigate();
   const token = localStorage.getItem('accesstoken')
   const  [value, setValue] = useState({
     feeback: "",

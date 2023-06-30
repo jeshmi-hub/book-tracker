@@ -43,8 +43,8 @@ const Navbar = () => {
   const adminRouter = () =>{
     return (
       <>
-      <li><Link to="">Reviews</Link></li>
-      <li><Link to="">Status</Link></li>
+      <li><Link to="/allBooks">Add Books</Link></li>
+      <li><Link to="/allReviews">Reviews</Link></li>
       </>
     )
   }
@@ -52,7 +52,7 @@ const Navbar = () => {
   const loggedRouter=()=>{
     return (
       <>
-      <li><Link to="/">Books</Link></li>
+      <li><Link to="/books">Books</Link></li>
       <li><Link to="/borrow"><i class="fa-sharp fa-solid fa-cart-shopping"></i>
       <span className="cart-icon">{totalBookBorrowed}</span></Link></li>
       <li><Link to="/" onClick={logoutUser}>Logout</Link></li>
@@ -128,7 +128,7 @@ const Navbar = () => {
             
             <li className="nav-item active">
               <NavLink className="nav-link" to="/" exact>
-                {isAdmin ? 'Add Books': 'Home'}
+                {isAdmin ? 'Home': 'Home'}
               </NavLink>
             </li>
             {isAdmin && adminRouter()}{
