@@ -10,14 +10,40 @@ const cron = require('node-cron');
 const sendEmail = require("./utils/sendEmail");
 const db = require("./models");
 const BookBorrow = db.bookBorrow;
+const axios = require("axios")
 
-
+app.set('view engine', 'ejs')
+app.set('views', 'views')
 
 app.use(express.json())
 app.use(morgan('dev'))
 app.use(express.urlencoded({extended: true}))
 app.use(cookieParser())
 app.use(cors())
+
+app.get('/', (req,res)=>{
+  res.render('index.ejs')
+})
+
+app.post('/form-submit', (req,res)=>{
+  axios.post('https://hooks.slack.com/services/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', 
+  {
+    blocks: [
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `Name: *${req.body.name}*\n \n Email: *${req.body.email}*`
+        }
+      }
+    ]
+  
+  }).then(() => {
+    res.send('Form submitted')
+  }).catch(() => {
+    res.send('Form submission Failed')
+  })
+})
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb){
