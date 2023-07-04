@@ -13,7 +13,6 @@ import AllReviews from "./components/AllReviews";
 import UpdateReview from "./components/UpdateReview";
 import Books from "./components/Books";
 import AllUsers from "./components/AllUsers";
-import Cart from "./components/cart/Cart";
 import ResendOTP from "./components/ResendOTP";
 
 
@@ -36,7 +35,6 @@ const App = () => {
       <Route path="/updateReview/:id" element={<UpdateReview/>}/>
       <Route path="/books" element={<Books/>}/>
       <Route path="/allUsers" element={<AllUsers/>}/>
-      <Route path="/borrow" element={<Cart/>}/>
       <Route path="/resendOtp/:id" element={<ResendOTP/>}/>
     </Routes>
     </BrowserRouter>

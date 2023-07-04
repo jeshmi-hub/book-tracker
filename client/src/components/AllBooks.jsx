@@ -122,7 +122,7 @@ const AllBooks = () => {
                 <td style={data}>{book.id}</td>
                 <td>{book.bookTitle}</td>
                 <td>{book.bookAuthor}</td>
-                <td><img src={`../images/${book.image}`} style={{width:"250px", height:"250px", objectFit: "cover", marginBottom:"10px"}}  alt="book-image"/></td>
+                <td><img src={`../images/${book.image}`} style={{width:"300px", height:"300px", objectFit: "contain", marginBottom:"10px"}}  alt="book-image"/></td>
                 <td>
                 <div style={book.available ? statusA : statusU}>
                 {book.available ? "Available" : "Unavailable"}

@@ -2,7 +2,10 @@ const jwt = require('jsonwebtoken');
 const db = require("../models");
 const BookBorrow = db.bookBorrow;
 const User = db.users;
+const Book = db.book;
 const Op = db.Sequelize.Op;
+const emailScheduler = require('./emailscheduler')
+const axios = require('axios')
 
 const borrowBookCtrl = {
   postBookBorrow: async (req, res) => {
@@ -20,18 +23,30 @@ const borrowBookCtrl = {
         return res.status(404).json({ error: 'User not found' });
       }
 
+      const book =await Book.findOne({
+      where: {
+        bookTitle: bookTitle,
+      },
+    })
+    console.log("book info",book.id)
+
       const email = user.email;
       const newBookBorrow = await BookBorrow.create({
         userId: user.id,
+        bookId:book.id,
         email: email,
         bookTitle: bookTitle,
       });
 
-      return res.status(200).json({ success: true, bookBorrow: newBookBorrow });
+      const emailResponse = await axios.get(`http://localhost:8000/schedule-email/${book.id}`);
+      // console.log("email response",await emailResponse.json())
+      return res.status(200).json({ success: true, bookBorrow: newBookBorrow, msg: `${bookTitle} borrowed` });
     } catch (err) {
       console.error(err);
       return res.status(401).json({ error: 'Invalid token' });
     }
+
+
   },
   getBorrowBook: async(req,res)=>{
     try{
@@ -59,56 +74,28 @@ const borrowBookCtrl = {
         return res.status(500).json({msg: err.message})
     }
   },
-
-  addBook:async (req, res) => {
+  
+  returnBookBorrowed : async(req,res)=>{
+    const {id} = req.params;
     const token = req.headers.authorization.split(' ')[1];
-    try {
+    try{
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       const userId = decoded.id;
-  
-      const user = await User.findByPk(userId);
-  
-      await BookBorrow.update(
-        {
-          cart: req.body.cart
-        },
-        {
-          where: {
-            id: req.params.id
-          }
-        }
-      );
-  
-      return res.json({ msg: "Added to Cart" });
-    } catch (err) {
-      return res.status(500).json({ msg: err.message });
-    }
-  },
+      const book = await BookBorrow.findOne({
+        where: {bookId: id,
+        userId:  userId},
+      })
+      
+      if(!book){
+        return res.status(404).json({msg: "Book not found"});
+      }
 
-  deleteBook:async(req,res)=> {
-    const token = req.headers.authorization.split(' ')[1];
-    try {
-      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      const userId = decoded.id;
-  
-      const user = await User.findByPk(userId);
-  
-      await BookBorrow.update(
-        {
-          cart: req.body.cart
-        },
-        {
-          where: {
-            id: req.params.id
-          }
-        }
-      );
-  
-      return res.json({ msg: "Removed from cart" });
-    } catch (err) {
-      return res.status(500).json({ msg: err.message });
-    }
+      await book.destroy();
+      res.status(200).json("Book returned successfully");
 
+    }catch(err){
+      return res.status(500).json({msg: err.message})
+    }
   }
 };
 

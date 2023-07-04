@@ -57,7 +57,7 @@ const Home = () =>{
   
     </div>
     <div className='flexbox'>
-      <h1>Reviews</h1>
+      <h1>Thoughts</h1>
     <div className='container2'>
         <div className='row2'>
             {

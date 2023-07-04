@@ -40,6 +40,9 @@ db.users.hasMany(db.review,{foreignKey: 'userId'});
 db.review.belongsTo(db.users,{foreignKey: 'userId'});
 db.users.hasMany(db.bookBorrow, {foreignKey: 'userId'});
 db.bookBorrow.belongsTo(db.users, {foreignKey: 'userId'});
+db.book.hasMany(db.bookBorrow, {foreignKey: 'bookId'});
+db.bookBorrow.belongsTo(db.book, {foreignKey: 'bookId'});
+
 
 
 

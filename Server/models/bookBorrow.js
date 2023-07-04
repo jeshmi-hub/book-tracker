@@ -1,5 +1,9 @@
 module.exports = (sequelize, DataTypes) => {
     const BookBorrow = sequelize.define("bookBorrow", {
+      bookId:{
+        type : DataTypes.INTEGER
+
+      },
       userId: {
         type: DataTypes.INTEGER
       },
@@ -10,16 +14,6 @@ module.exports = (sequelize, DataTypes) => {
       bookTitle: {
         type: DataTypes.STRING,
         allowNull: false
-      },
-      cart: {
-        type: DataTypes.STRING,
-        get() {
-          const value = this.getDataValue("cart");
-          return value ? JSON.parse(value) : [];
-        },
-        set(value) {
-          this.setDataValue("cart", JSON.stringify(value));
-        },
       }
     });
   

@@ -3,35 +3,14 @@ import '../Navbar/Navbar.css';
 import { Link, NavLink } from 'react-router-dom';
 import $ from 'jquery';
 import { GlobalState } from '../../GlobalState';
-import BorrowBookAPI from '../../api/BorrowBookAPI';
 import axios from "axios";
-const URL = "http://localhost:8000/getAllBorrower";
+
 
 const Navbar = () => {
   const state = useContext(GlobalState)
   const [isLogged, setIsLogged] = state.userAPI.isLogged
   const [isAdmin, setIsAdmin] = state.userAPI.isAdmin
-
-  const [token, setToken] = useState(localStorage.getItem('accesstoken'));
-  const [refresh, setRefresh] = useState(false);
-
-  const use = {
-    token: [token, setToken],
-    borrow: BorrowBookAPI(token)
-  }
-
-  const [boorowBook , setIsBorrowed] = useState(null);
-  const addBorrowedBook = use.borrow.addBorrowedBook;
-  const totalBookBorrowed = use.borrow.totalBookBorrowed;
-
-  useEffect(()=>{
-    const getBorrowedBooks = async()=>{
-      const res = await axios.get(URL)
-      setIsBorrowed(res.data)
-      console.log(boorowBook)
-    }
-    getBorrowedBooks()
-  },[refresh])
+  const [refresh, setRefresh] = useState(false)
 
 
   const logoutUser = async()=>{
@@ -53,8 +32,6 @@ const Navbar = () => {
     return (
       <>
       <li><Link to="/books">Books</Link></li>
-      <li><Link to="/borrow"><i class="fa-sharp fa-solid fa-cart-shopping"></i>
-      <span className="cart-icon">{totalBookBorrowed}</span></Link></li>
       <li><Link to="/" onClick={logoutUser}>Logout</Link></li>
       </>
     )
@@ -95,7 +72,7 @@ const Navbar = () => {
       setTimeout(function(){ animation(); }, 500);
     });
     
-  }, []);
+  }, [refresh]);
 
   
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer/Footer";
+import axios from "axios";
 
 
 const Books = () => {
@@ -11,9 +12,9 @@ const Books = () => {
   };
   
   const images = {
-    width: "100%",
+    width: "18rem",
     height: "300px",
-    objectFit: "cover",
+    objectFit: "contain",
   };
 
   const button = {
@@ -94,6 +95,58 @@ const Books = () => {
     getData();
   },[refresh]);
 
+  const postBorrow = async (bookTitle)=>{
+    console.log(bookTitle)
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/postBookBorrow",
+        {
+          bookTitle: bookTitle,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const updatedBooks = books.map((book) => {
+        if (book.bookTitle === bookTitle) {
+          return { ...book, available: false };
+        }
+        return book;
+      });
+      setBooks(updatedBooks);
+      alert(response.data.msg)
+
+    } catch (error) {
+      console.error(error);
+    }
+  
+  }
+
+  const returnBook = async(id)=>{
+    console.log("book borrow id",id)
+    const url = `http://localhost:8000/returnBook/${id}`;
+    const res = await axios.delete(url,{
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      }
+    })
+    const updatedBooks = books.map((book) => {
+      if (book.id === id) {
+        return { ...book, available: true };
+      }
+      return book;
+    });
+    setBooks(updatedBooks);
+    alert(res.data)
+    setRefresh(!refresh)
+  };
+
+  
+
 
   return (
     <>
@@ -118,20 +171,18 @@ const Books = () => {
                     </div>
                   </p>
                   <div className="d-flex justify-content-start">
-                    <a href="#" style={button} className="btn btn-primary">
+                    <button onClick={()=>postBorrow(book.bookTitle)} style={button} className="btn btn-primary">
                       Borrow
-                    </a>
-                    <a href="#" style={button} className="btn btn-primary">
+                    </button>
+                    <button onClick={()=> returnBook(book.id)} style={button} className="btn btn-primary">
                       Return
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
                 
             )
-        })}
-       
-        
+        })} 
       </div>
       <Footer />
     </>
